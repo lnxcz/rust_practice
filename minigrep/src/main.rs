@@ -1,22 +1,28 @@
 use std::env;
 use std::fs;
 
+use minigrep::{Input, SearchResult};
+
 fn main() {
     let args: Vec<String> = env::args().collect();
 
-    let filename = &args[1];
-    let query = &args[2];
+    let inputs = Input::new(args).unwrap_or_else(|err| {
+        println!("Problem parsing arguments: {}", err);
+        std::process::exit(1);
+    });
 
-    let file_content = read_file(filename);
-    let final_result = find_query(&file_content, &query);
+    let file_content = read_file(&inputs.filename);
+    let final_result = find_query(&file_content, &inputs.query);
 
     println!("Found {} results!", final_result.len());
     final_result.iter().for_each(|x| {
         println!(
             "{} | {}",
             x.line_number,
-            x.line
-                .replace(query, format!("\x1b[32m{}\x1b[0m", query).as_str())
+            x.line.replace(
+                inputs.query.as_str(),
+                format!("\x1b[32m{}\x1b[0m", inputs.query).as_str()
+            )
         )
     });
 }
@@ -27,16 +33,6 @@ fn read_file(filename: &String) -> String {
     content
 }
 
-struct SearchResult {
-    line_number: usize,
-    line: String,
-}
-
-impl SearchResult {
-    fn new(line_number: usize, line: String) -> SearchResult {
-        SearchResult { line_number, line }
-    }
-}
 fn find_query(content: &String, query: &String) -> Vec<SearchResult> {
     let content: Vec<&str> = content.split("\n").collect();
     let mut results: Vec<SearchResult> = Vec::new();
