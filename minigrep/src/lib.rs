@@ -5,6 +5,7 @@ pub struct Input {
     pub filename: String,
     pub query: String,
 }
+
 impl Input {
     pub fn new(args: Vec<String>) -> Result<Input, Error> {
         if args.len() < 3 {
